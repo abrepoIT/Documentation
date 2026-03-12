@@ -5,8 +5,7 @@ Version: 2.0
 Last Update: 2026-03-12  
 Audience: System Administrators / Infrastructure Engineers  
 Document Type: Operational Hardening KB  
-Status Taxonomy: PASS / WARNING / FAIL  
-Scope: Procedura manuale di hardening e configurazione baseline per Windows Server post-installazione.
+Scope: Manual hardening and baseline configuration procedure for post-installation Windows Server.
 
 ---
 
@@ -40,21 +39,21 @@ Scope: Procedura manuale di hardening e configurazione baseline per Windows Serv
 
 ## 1) Purpose
 
-Questa knowledge base definisce una sequenza standard di configurazioni post-installazione per:
-- uniformare la baseline di sicurezza
-- ridurre la superficie di attacco
-- abilitare governance centralizzata degli aggiornamenti
+This knowledge base defines a standard post-installation configuration sequence to:
+- standardize the security baseline
+- reduce the attack surface
+- enable centralized update governance
 
-Ogni sezione include:
-- comando copiabile
-- obiettivo tecnico
-- verifica rapida
+Each section includes:
+- copyable command
+- technical objective
+- quick verification
 
 ---
 
 ## 2) Prerequisites
 
-Eseguire PowerShell come Administrator.
+Run PowerShell as Administrator.
 
 ~~~powershell
 whoami
@@ -62,8 +61,8 @@ hostname
 (Get-CimInstance Win32_OperatingSystem).Caption
 ~~~
 
-Obiettivo:
-- confermare privilegi e contesto macchina prima delle modifiche
+Objective:
+- confirm privileges and machine context before making changes
 
 ---
 
@@ -74,18 +73,18 @@ $NewComputerName = "SERVER01"
 Rename-Computer -NewName $NewComputerName -Force
 ~~~
 
-Verifica:
+Verification:
 
 ~~~powershell
 hostname
 Get-ComputerInfo | Select-Object CsName
 ~~~
 
-Risultato atteso:
-- nome host coerente con naming convention
+Expected result:
+- host name aligned with naming convention
 
-Nota:
-- reboot richiesto per applicazione completa
+Note:
+- reboot required for full application
 
 ---
 
@@ -98,15 +97,15 @@ Where-Object { $_.ElementName -eq "High performance" }
 $plan.Activate()
 ~~~
 
-Verifica:
+Verification:
 
 ~~~powershell
 Get-WmiObject -Namespace root\cimv2\power -Class Win32_PowerPlan |
 Where-Object { $_.IsActive -eq $true }
 ~~~
 
-Risultato atteso:
-- piano attivo impostato su High performance
+Expected result:
+- active plan set to High performance
 
 ---
 
@@ -116,20 +115,20 @@ Risultato atteso:
 Install-WindowsFeature NET-Framework-Core
 ~~~
 
-Opzione offline:
+Offline option:
 
 ~~~powershell
 Install-WindowsFeature NET-Framework-Core -Source D:\sources\sxs
 ~~~
 
-Verifica:
+Verification:
 
 ~~~powershell
 Get-WindowsFeature NET-Framework-Core
 ~~~
 
-Risultato atteso:
-- feature installata correttamente
+Expected result:
+- feature installed correctly
 
 ---
 
@@ -139,14 +138,14 @@ Risultato atteso:
 Install-WindowsFeature Telnet-Client
 ~~~
 
-Verifica:
+Verification:
 
 ~~~powershell
 Get-WindowsFeature Telnet-Client
 ~~~
 
-Risultato atteso:
-- Telnet Client presente e installato
+Expected result:
+- Telnet Client present and installed
 
 ---
 
@@ -159,15 +158,15 @@ w32tm /config /manualpeerlist:$ntp /syncfromflags:manual /reliable:yes /update
 w32tm /resync
 ~~~
 
-Verifica:
+Verification:
 
 ~~~powershell
 w32tm /query /configuration
 w32tm /query /status
 ~~~
 
-Risultato atteso:
-- source NTP corretta e sincronizzazione attiva
+Expected result:
+- correct NTP source and active synchronization
 
 ---
 
@@ -182,14 +181,14 @@ cscript C:\Windows\System32\slmgr.vbs /skms $kms
 cscript C:\Windows\System32\slmgr.vbs /ato
 ~~~
 
-Verifica:
+Verification:
 
 ~~~powershell
 slmgr /dlv
 ~~~
 
-Risultato atteso:
-- activation channel e KMS host valorizzati correttamente
+Expected result:
+- activation channel and KMS host configured correctly
 
 ---
 
@@ -204,14 +203,14 @@ ForEach-Object {
 }
 ~~~
 
-Verifica:
+Verification:
 
 ~~~powershell
 Get-NetAdapterPowerManagement
 ~~~
 
-Risultato atteso:
-- opzioni di power-saving non attive sugli adapter operativi
+Expected result:
+- power-saving options not active on operational adapters
 
 ---
 
@@ -226,7 +225,7 @@ Set-WinHomeLocation -GeoId 118
 Set-TimeZone "W. Europe Standard Time"
 ~~~
 
-Configurazione layout tastiera:
+Keyboard layout configuration:
 
 ~~~powershell
 $lang = New-WinUserLanguageList it-IT
@@ -235,7 +234,7 @@ $lang[0].InputMethodTips.Add("0410:00000410")
 Set-WinUserLanguageList $lang -Force
 ~~~
 
-Verifica:
+Verification:
 
 ~~~powershell
 Get-Culture
@@ -243,11 +242,11 @@ Get-WinSystemLocale
 Get-TimeZone
 ~~~
 
-Risultato atteso:
-- lingua, locale e timezone allineati alla baseline
+Expected result:
+- language, locale, and timezone aligned with the baseline
 
-Nota:
-- alcune impostazioni convergono completamente dopo logoff o reboot
+Note:
+- some settings fully converge only after logoff or reboot
 
 ---
 
@@ -258,15 +257,15 @@ Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A5
 Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}" IsInstalled 0
 ~~~
 
-Verifica:
+Verification:
 
 ~~~powershell
 reg query "HKLM\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-37EF-4b3f-8CFC-4F3A74704073}" /v IsInstalled
 reg query "HKLM\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}" /v IsInstalled
 ~~~
 
-Risultato atteso:
-- entrambe le chiavi con valore 0
+Expected result:
+- both keys set to value 0
 
 ---
 
@@ -280,7 +279,7 @@ Stop-Service dmwappushservice -Force
 Set-Service dmwappushservice -StartupType Disabled
 ~~~
 
-Configurazione registry:
+Registry configuration:
 
 ~~~powershell
 New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Force
@@ -290,7 +289,7 @@ Set-ItemProperty "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" Allo
 Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" AllowDiagnosticData 0
 ~~~
 
-Verifica:
+Verification:
 
 ~~~powershell
 Get-Service DiagTrack, dmwappushservice | Select-Object Name, Status, StartType
@@ -298,9 +297,9 @@ reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection /v AllowDiagno
 reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection /v AllowDiagnosticData
 ~~~
 
-Risultato atteso:
-- servizi disabilitati
-- AllowDiagnosticData impostato a 0 in entrambe le chiavi
+Expected result:
+- services disabled
+- AllowDiagnosticData set to 0 in both keys
 
 ---
 
@@ -319,7 +318,7 @@ Set-ItemProperty "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" Disab
 Set-ItemProperty "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" NoAutoUpdate 1
 ~~~
 
-Verifica:
+Verification:
 
 ~~~powershell
 reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU /v AUOptions
@@ -328,8 +327,8 @@ reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate /v DisableWindo
 Get-CimInstance Win32_Service -Filter "Name='wuauserv'" | Select-Object Name, StartMode
 ~~~
 
-Risultato atteso:
-- policy AU applicata e servizio Windows Update in Manual
+Expected result:
+- AU policy applied and Windows Update service set to Manual
 
 ---
 
@@ -340,7 +339,7 @@ New-Item "HKLM:\SYSTEM\CurrentControlSet\Services\TCPIP6\Parameters" -Force
 Set-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\TCPIP6\Parameters" DisabledComponents 255
 ~~~
 
-Disabilitazione binding:
+Binding disable operation:
 
 ~~~powershell
 Get-NetAdapter |
@@ -348,22 +347,22 @@ Where-Object { $_.Status -eq "Up" } |
 Disable-NetAdapterBinding -ComponentID ms_tcpip6 -Confirm:$false
 ~~~
 
-Verifica:
+Verification:
 
 ~~~powershell
 reg query HKLM\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters /v DisabledComponents
 Get-NetAdapterBinding -ComponentID ms_tcpip6 | Select-Object Name, Enabled
 ~~~
 
-Risultato atteso:
-- DisabledComponents a 255
-- binding IPv6 disabilitato sugli adapter target
+Expected result:
+- DisabledComponents set to 255
+- IPv6 binding disabled on target adapters
 
 ---
 
 ## 15) Disable Unnecessary Services
 
-Esempio:
+Example:
 
 ~~~powershell
 Stop-Service Spooler -Force
@@ -373,14 +372,14 @@ Stop-Service iphlpsvc -Force
 Set-Service iphlpsvc -StartupType Disabled
 ~~~
 
-Verifica:
+Verification:
 
 ~~~powershell
 Get-Service | Where-Object { $_.StartType -eq "Disabled" }
 ~~~
 
-Risultato atteso:
-- servizi non necessari disabilitati in base alla policy aziendale
+Expected result:
+- unnecessary services disabled according to company policy
 
 ---
 
@@ -391,14 +390,14 @@ New-Item "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Forc
 Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" LocalAccountTokenFilterPolicy 1
 ~~~
 
-Verifica:
+Verification:
 
 ~~~powershell
 reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v LocalAccountTokenFilterPolicy
 ~~~
 
-Risultato atteso:
-- LocalAccountTokenFilterPolicy impostato a 1
+Expected result:
+- LocalAccountTokenFilterPolicy set to 1
 
 ---
 
@@ -410,15 +409,15 @@ New-NetFirewallRule -DisplayName "Allow SMB-Out" -Direction Outbound -Protocol T
 New-NetFirewallRule -DisplayName "Allow ICMPv4-In" -Direction Inbound -Protocol ICMPv4 -Action Allow
 ~~~
 
-Verifica:
+Verification:
 
 ~~~powershell
 Get-NetFirewallRule | Where-Object DisplayName -Match "SMB|ICMP"
 Get-NetFirewallRule -DisplayName "Allow SMB-In","Allow SMB-Out","Allow ICMPv4-In" | Select-Object DisplayName, Enabled
 ~~~
 
-Risultato atteso:
-- regole create e abilitate
+Expected result:
+- rules created and enabled
 
 ---
 
@@ -432,7 +431,7 @@ ForEach-Object {
 }
 ~~~
 
-Verifica:
+Verification:
 
 ~~~powershell
 Get-CimInstance Win32_NetworkAdapterConfiguration |
@@ -440,8 +439,8 @@ Where-Object { $_.IPEnabled } |
 Select-Object Description, TcpipNetbiosOptions
 ~~~
 
-Risultato atteso:
-- TcpipNetbiosOptions impostato a 2
+Expected result:
+- TcpipNetbiosOptions set to 2
 
 ---
 
@@ -460,7 +459,7 @@ Set-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\Dnscache\Parameters" D
 Set-ItemProperty "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" DisableMulticast 1
 ~~~
 
-Verifica:
+Verification:
 
 ~~~powershell
 reg query "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient" /v DisableMulticast
@@ -468,8 +467,8 @@ reg query "HKLM\SYSTEM\CurrentControlSet\Services\Dnscache\Parameters" /v Disabl
 Get-Service mdnsresponder -ErrorAction SilentlyContinue | Select-Object Name, Status, StartType
 ~~~
 
-Risultato atteso:
-- multicast name resolution disabilitata da policy e global key
+Expected result:
+- multicast name resolution disabled by policy and global key
 
 ---
 
@@ -482,13 +481,13 @@ Set-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa\Kerberos\Parameters
 Set-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" AuditKerberos 1
 ~~~
 
-Abilitazione operational log:
+Operational log enablement:
 
 ~~~powershell
 wevtutil set-log Microsoft-Windows-Kerberos/Operational /enabled:true
 ~~~
 
-Verifica:
+Verification:
 
 ~~~powershell
 reg query HKLM\SYSTEM\CurrentControlSet\Control\Lsa\Kerberos\Parameters /v LogLevel
@@ -496,9 +495,9 @@ reg query HKLM\SYSTEM\CurrentControlSet\Control\Lsa /v AuditKerberos
 wevtutil gl "Microsoft-Windows-Kerberos/Operational"
 ~~~
 
-Risultato atteso:
-- LogLevel e AuditKerberos impostati a 1
-- canale Operational abilitato
+Expected result:
+- LogLevel and AuditKerberos set to 1
+- Operational channel enabled
 
 ---
 
@@ -528,7 +527,7 @@ Set-ItemProperty "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" No
 Set-Service wuauserv -StartupType Manual
 ~~~
 
-Verifica:
+Verification:
 
 ~~~powershell
 reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate
@@ -538,34 +537,8 @@ reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate /v DisableWindo
 reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU /v NoAutoRebootWithLoggedOnUsers
 ~~~
 
-Risultato atteso:
-- chiavi WUServer e WUStatusServer valorizzate
-- policy di aggiornamento allineata al modello manuale governato
+Expected result:
+- WUServer and WUStatusServer keys configured
+- update policy aligned with the governed manual model
 
 ---
-
-## 22) Post-Change Verification
-
-Checklist finale consigliata:
-1. Riavviare il server se presenti modifiche pending.
-2. Eseguire la KB di verifica configurazioni.
-3. Salvare output e screenshot come evidenza di compliance.
-4. Aprire ticket di remediation per eventuali controlli non conformi.
-
-Classificazione esiti:
-- PASS: allineato alla baseline
-- WARNING: parzialmente allineato o in stato transitorio
-- FAIL: non allineato o configurazione mancante
-
----
-
-## 23) Evidence Collection Template
-
-Campi minimi consigliati per audit/compliance:
-- ServerName
-- Data/Ora intervento
-- Operatore
-- Configurazione applicata
-- Evidenza comando/output
-- Esito (PASS/WARNING/FAIL)
-- Note e change/ticket ID

@@ -1,12 +1,9 @@
 ﻿# KB - Windows Configuration Verification Checklist
-
-Author: Andrea Balconi  
-Version: 2.0  
-Last Update: 2026-03-12  
-Audience: System Administrators / Infrastructure Engineers  
-Document Type: Operational Verification KB  
-Status Taxonomy: PASS / WARNING / FAIL  
-Scope: Verifica manuale della configurazione di hardening Windows Server post-deploy.
+**Author:** Andrea Balconi  
+**Version:** 2.0  
+**Last Update:** 2026-03-12  
+**Audience:** System Administrators / Infrastructure Engineers  
+**Scope:** Manual verification of post-deployment Windows Server hardening configuration.
 
 ---
 
@@ -37,18 +34,18 @@ Scope: Verifica manuale della configurazione di hardening Windows Server post-de
 
 ## 1) Purpose
 
-Questa knowledge base documenta i controlli di verifica manuale da eseguire su server Windows configurati tramite baseline di hardening.
+This knowledge base documents the manual verification checks to run on Windows servers configured using a hardening baseline.
 
-Ogni sezione include:
-- comando copiabile
-- risultato atteso
-- note operative
+Each section includes:
+- copyable command
+- expected result
+- operational notes
 
 ---
 
 ## 2) Prerequisites
 
-Eseguire PowerShell come Administrator.
+Run PowerShell as Administrator.
 
 ```powershell
 whoami
@@ -56,10 +53,10 @@ hostname
 (Get-CimInstance Win32_OperatingSystem).Caption
 ```
 
-Risultato atteso:
-- account con privilegi amministrativi
-- hostname coerente con naming convention
-- sistema operativo previsto
+Expected result:
+- account with administrative privileges
+- hostname aligned with naming convention
+- expected operating system
 
 ---
 
@@ -71,9 +68,9 @@ Get-ComputerInfo | Select-Object CsName
 Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\ComputerName\ComputerName' | Select-Object ComputerName
 ```
 
-Risultato atteso:
-- `hostname` e `CsName` coerenti
-- eventuale valore differente in registry indica rename pending fino al reboot
+Expected result:
+- `hostname` and `CsName` are consistent
+- any different value in the registry indicates a pending rename until reboot
 
 ---
 
@@ -84,8 +81,8 @@ powercfg /L
 powercfg /GETACTIVESCHEME
 ```
 
-Risultato atteso:
-- piano attivo: High performance
+Expected result:
+- active plan: High performance
 
 ---
 
@@ -96,7 +93,7 @@ Get-WindowsOptionalFeature -Online -FeatureName NetFx3
 dism /online /Get-FeatureInfo /FeatureName:TelnetClient
 ```
 
-Risultato atteso:
+Expected result:
 - NetFx3: `State = Enabled`
 - Telnet Client: `State : Enabled`
 
@@ -109,9 +106,9 @@ w32tm /query /configuration
 w32tm /query /status
 ```
 
-Risultato atteso:
+Expected result:
 - `Type = NTP`
-- `NtpServer` valorizzato con peer atteso (gateway o server custom)
+- `NtpServer` set with the expected peer (gateway or custom server)
 
 ---
 
@@ -121,9 +118,9 @@ Risultato atteso:
 slmgr /dlv
 ```
 
-Risultato atteso:
-- canale di attivazione coerente
-- KMS host e stato attivazione corretti
+Expected result:
+- activation channel is consistent
+- KMS host and activation status are correct
 
 ---
 
@@ -143,9 +140,9 @@ ForEach-Object {
 } | Where-Object { $_.NetCfgInstanceId } | Select-Object KeyName, NetCfgInstanceId, PnPCapabilities
 ```
 
-Risultato atteso:
-- su cmdlet: `AllowComputerToTurnOffDevice = Disabled`
-- fallback registry: `PnPCapabilities = 24`
+Expected result:
+- in cmdlet output: `AllowComputerToTurnOffDevice = Disabled`
+- registry fallback: `PnPCapabilities = 24`
 
 ---
 
@@ -157,11 +154,11 @@ Get-WinSystemLocale
 Get-TimeZone
 ```
 
-Risultato atteso:
-- cultura, system locale e timezone allineati alla baseline
+Expected result:
+- culture, system locale, and timezone aligned with the baseline
 
-Nota:
-- dopo modifica possono servire sign-out/reboot per convergenza completa
+Note:
+- after changes, sign-out/reboot may be required for full convergence
 
 ---
 
@@ -172,8 +169,8 @@ reg query "HKLM\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-3
 reg query "HKLM\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}" /v IsInstalled
 ```
 
-Risultato atteso:
-- entrambe le chiavi: `IsInstalled REG_DWORD 0x0`
+Expected result:
+- both keys: `IsInstalled REG_DWORD 0x0`
 
 ---
 
@@ -185,9 +182,9 @@ reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection /v AllowDiagno
 reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection /v AllowDiagnosticData
 ```
 
-Risultato atteso:
-- servizi: `StartType = Disabled`
-- entrambe le chiavi: `AllowDiagnosticData REG_DWORD 0x0`
+Expected result:
+- services: `StartType = Disabled`
+- both keys: `AllowDiagnosticData REG_DWORD 0x0`
 
 ---
 
@@ -200,7 +197,7 @@ reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate /v DisableWindo
 Get-CimInstance Win32_Service -Filter "Name='wuauserv'" | Select-Object Name, StartMode
 ```
 
-Risultato atteso:
+Expected result:
 - `AUOptions = 2`
 - `NoAutoUpdate = 1`
 - `DisableWindowsUpdateAccess = 1`
@@ -215,12 +212,12 @@ reg query HKLM\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters /v DisabledCo
 Get-NetAdapterBinding -ComponentID ms_tcpip6 | Select-Object Name, Enabled
 ```
 
-Risultato atteso:
+Expected result:
 - `DisabledComponents = 0xFF`
-- sugli adapter attivi: `Enabled = False`
+- on active adapters: `Enabled = False`
 
-Nota:
-- dopo la modifica alcuni adapter possono restare temporaneamente `Enabled=True` fino al reboot
+Note:
+- after the change, some adapters may temporarily remain `Enabled=True` until reboot
 
 ---
 
@@ -230,8 +227,8 @@ Nota:
 Get-Service | Where-Object {$_.StartType -eq "Disabled"}
 ```
 
-Risultato atteso:
-- elenco coerente con policy aziendale
+Expected result:
+- list aligned with company policy
 
 ---
 
@@ -241,8 +238,8 @@ Risultato atteso:
 reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v LocalAccountTokenFilterPolicy
 ```
 
-Risultato atteso:
-- valore `1` (UAC remote restrictions disabilitate)
+Expected result:
+- value `1` (UAC remote restrictions disabled)
 
 ---
 
@@ -253,9 +250,9 @@ Get-NetFirewallRule | Where-Object {$_.DisplayName -match "SMB|ICMP"}
 Get-NetFirewallRule -DisplayName "Allow SMB-In","Allow SMB-Out","Allow ICMPv4-In" | Select-Object DisplayName, Enabled
 ```
 
-Risultato atteso:
-- regole previste presenti
-- regole target abilitate in linea con baseline
+Expected result:
+- expected rules are present
+- target rules are enabled in line with the baseline
 
 ---
 
@@ -267,8 +264,8 @@ Where-Object {$_.IPEnabled} |
 Select-Object Description, TcpipNetbiosOptions
 ```
 
-Risultato atteso:
-- `TcpipNetbiosOptions = 2` (NetBIOS disabilitato)
+Expected result:
+- `TcpipNetbiosOptions = 2` (NetBIOS disabled)
 
 ---
 
@@ -280,10 +277,10 @@ reg query "HKLM\SYSTEM\CurrentControlSet\Services\Dnscache\Parameters" /v Disabl
 Get-Service mdnsresponder -ErrorAction SilentlyContinue | Select-Object Name, Status, StartType
 ```
 
-Risultato atteso:
+Expected result:
 - policy key: `DisableMulticast REG_DWORD 0x1`
 - global key: `DisableMulticast REG_DWORD 0x1`
-- `mdnsresponder` disabilitato se presente
+- `mdnsresponder` disabled if present
 
 ---
 
@@ -295,13 +292,13 @@ reg query HKLM\SYSTEM\CurrentControlSet\Control\Lsa /v AuditKerberos
 wevtutil gl "Microsoft-Windows-Kerberos/Operational"
 ```
 
-Risultato atteso:
+Expected result:
 - `LogLevel REG_DWORD 0x1`
 - `AuditKerberos REG_DWORD 0x1`
-- canale Operational abilitato
+- Operational channel enabled
 
-Nota:
-- in alcuni casi serve refresh o reboot per vedere piena coerenza
+Note:
+- in some cases, a refresh or reboot is needed to observe full consistency
 
 ---
 
@@ -315,12 +312,12 @@ reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate /v DisableWindo
 reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU /v NoAutoRebootWithLoggedOnUsers
 ```
 
-Chiavi importanti da verificare:
+Important keys to verify:
 - `WUServer`
 - `WUStatusServer`
 
-Risultato atteso:
-- server WSUS valorizzati correttamente
-- policy AU coerente con baseline
+Expected result:
+- WSUS servers configured correctly
+- AU policy aligned with the baseline
 
 ---
