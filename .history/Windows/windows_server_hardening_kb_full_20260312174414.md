@@ -69,7 +69,7 @@ Objective:
 ## 3) Rename Server
 
 ~~~powershell
-$NewComputerName = "SERVER-NAME"
+$NewComputerName = "SERVER01"
 Rename-Computer -NewName $NewComputerName -Force
 ~~~
 
@@ -152,7 +152,7 @@ Expected result:
 ## 7) Configure NTP
 
 ~~~powershell
-$ntp = "IP_ADDRESS_OR_HOSTNAME"
+$ntp = "IP"
 
 w32tm /config /manualpeerlist:$ntp /syncfromflags:manual /reliable:yes /update
 w32tm /resync

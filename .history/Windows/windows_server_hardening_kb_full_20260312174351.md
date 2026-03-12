@@ -69,7 +69,7 @@ Objective:
 ## 3) Rename Server
 
 ~~~powershell
-$NewComputerName = "SERVER-NAME"
+$NewComputerName = "SERVER01"
 Rename-Computer -NewName $NewComputerName -Force
 ~~~
 
@@ -152,7 +152,7 @@ Expected result:
 ## 7) Configure NTP
 
 ~~~powershell
-$ntp = "IP_ADDRESS_OR_HOSTNAME"
+$ntp = "192.168.1.1"
 
 w32tm /config /manualpeerlist:$ntp /syncfromflags:manual /reliable:yes /update
 w32tm /resync
@@ -174,7 +174,7 @@ Expected result:
 
 ~~~powershell
 $productkey = "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX"
-$kms = "kms.server.com:12688"
+$kms = "kms.arubacloud.com:12688"
 
 cscript C:\Windows\System32\slmgr.vbs /ipk $productkey
 cscript C:\Windows\System32\slmgr.vbs /skms $kms

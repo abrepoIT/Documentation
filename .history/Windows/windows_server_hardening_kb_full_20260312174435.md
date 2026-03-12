@@ -69,7 +69,7 @@ Objective:
 ## 3) Rename Server
 
 ~~~powershell
-$NewComputerName = "SERVER-NAME"
+$NewComputerName = "S"
 Rename-Computer -NewName $NewComputerName -Force
 ~~~
 
