@@ -10,9 +10,9 @@ The documentation is organized by technology or topic.
 
 Example structure:
 
-Windows/
-NetApp/
-Azure/
+- Windows
+- NetApp
+- Azure
 
 Each folder contains Markdown files with procedures, notes, and configuration examples.
 
